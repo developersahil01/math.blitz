@@ -1,18 +1,23 @@
 {
-  "name": "math-blitz",
+  "name": "rrb-je-client",
   "version": "1.0.0",
   "private": true,
-  "description": "Competitive exam math practice platform (Vercel serverless)",
-  "engines": {
-    "node": ">=20"
-  },
+  "type": "module",
   "scripts": {
-    "build": "node tools/build-assets.mjs && cd client && npm install --no-audit --no-fund --include=dev && npm run build && cd .. && node tools/build-seo.mjs"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "mongoose": "^8.5.0",
-    "serverless-http": "^3.2.0"
+    "@vercel/analytics": "^2.0.1",
+    "lucide-react": "^1.47.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^4.3.1",
+    "tailwindcss": "^4.3.3",
+    "vite": "^5.4.0"
   }
 }
