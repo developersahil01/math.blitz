@@ -1,0 +1,37 @@
+import React, { useEffect, useState } from 'react';
+
+const KEY = 'mathblitz_consent';
+
+export default function ConsentBanner() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem(KEY)) setVisible(true);
+  }, []);
+
+  const decide = (v) => {
+    localStorage.setItem(KEY, v);
+    setVisible(false);
+  };
+
+  if (!visible) return null;
+  return (
+    <div className="fixed inset-x-0 bottom-[64px] z-50 mx-auto max-w-md px-4 sm:bottom-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+        <p className="text-[13px] font-semibold text-slate-700">We keep your progress on this device</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
+          We use browser storage and optional Google sign-in so your scores and streaks survive reloads. We never sell your data. See our{' '}
+          <a className="font-semibold text-indigo-600" href="/privacy.html" target="_blank" rel="noopener noreferrer">privacy policy</a>.
+        </p>
+        <div className="mt-3 flex gap-2">
+          <button onClick={() => decide('accepted')} className="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-[13px] font-bold text-white transition hover:bg-indigo-700">
+            Accept
+          </button>
+          <button onClick={() => decide('declined')} className="rounded-full border border-slate-300 px-4 py-2 text-[13px] font-bold text-slate-600 transition hover:bg-slate-50">
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
