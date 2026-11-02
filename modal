@@ -1,0 +1,98 @@
+import React, { useState } from 'react';
+import Modal from './Modal.jsx';
+
+const START_META = {
+  quick: { title: 'Start Quick Blitz?', desc: '5 rapid-fire questions that adapt to your level.', difficulty: true },
+  sprint: { title: 'Start Sprint?', desc: '10 questions in 5 minutes — pure speed.', difficulty: false },
+  topic: { title: 'Start Topic Drills?', desc: 'Pick a chapter (or mixed) and go deep.', topic: true, difficulty: true },
+  exam: { title: 'Start Exam Mode?', desc: 'Timed mock with a difficulty mix.', count: true, time: true },
+  'weak-area': { title: 'Start Weak Area?', desc: 'Automatically targets your worst topic.', difficulty: true },
+  daily: { title: 'Start Daily Challenge?', desc: '5 unique questions, same for every student today.', difficulty: false },
+};
+
+export default function ModeConfirmModal({ open, mode, topics, onCancel, onStart }) {
+  const [topic, setTopic] = useState('');
+  const [difficulty, setDifficulty] = useState('EASY');
+  const [count, setCount] = useState(25);
+  const [timeLimit, setTimeLimit] = useState(1800);
+  const [starting, setStarting] = useState(false);
+  const [err, setErr] = useState('');
+
+  if (!mode) return null;
+  const meta = START_META[mode] || { title: 'Start?', desc: '', difficulty: false };
+
+  function reset() {
+    setStarting(false);
+    setErr('');
+  }
+
+  async function confirm() {
+    const config = {};
+    if (meta.difficulty) config.difficulty = difficulty;
+    if (meta.count) config.questionCount = count;
+    if (meta.time) config.timeLimitSec = timeLimit;
+    if (mode === 'sprint') config.timeLimitSec = 300;
+    setStarting(true);
+    setErr('');
+    try {
+      await onStart({ topic: meta.topic ? topic : undefined, config });
+      reset();
+      onCancel();
+    } catch (e) {
+      reset();
+      setErr(e.message);
+    }
+  }
+
+  return (
+    <Modal
+      open={open}
+      title={meta.title}
+      onClose={onCancel}
+      footer={
+        <>
+          <button className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 font-extrabold text-slate-700 transition hover:bg-slate-50" onClick={onCancel}>Cancel</button>
+          <button className="flex-1 rounded-xl bg-indigo-600 px-4 py-3 font-extrabold text-white shadow-sm transition hover:bg-indigo-700" onClick={confirm} disabled={starting}>
+            {starting ? 'Starting…' : 'Start now'}
+          </button>
+        </>
+      }
+    >
+      <p className="text-sm text-slate-500">{meta.desc}</p>
+      {err && <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{err}</div>}
+      {meta.topic && (
+        <label className="mt-3 block">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Topic</span>
+          <select value={topic} onChange={(e) => setTopic(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">Any topic (mixed)</option>
+            {(topics || []).map((t) => <option key={t.topic} value={t.topic}>{t.topic}</option>)}
+          </select>
+        </label>
+      )}
+      {meta.difficulty && (
+        <label className="mt-3 block">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Start difficulty (adapts over time)</span>
+          <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            {['EASY', 'MEDIUM', 'HARD', 'EXPERT'].map((d) => <option key={d}>{d}</option>)}
+          </select>
+        </label>
+      )}
+      {meta.count && (
+        <label className="mt-3 block">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Questions</span>
+          <select value={count} onChange={(e) => setCount(Number(e.target.value))} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            {[10, 25, 50, 100].map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </label>
+      )}
+      {meta.time && (
+        <label className="mt-3 block">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Time limit</span>
+          <select value={timeLimit} onChange={(e) => setTimeLimit(Number(e.target.value))} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            {[[600, '10 min'], [1800, '30 min'], [3600, '60 min'], [7200, '2 hr']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+        </label>
+      )}
+    </Modal>
+  );
+}
